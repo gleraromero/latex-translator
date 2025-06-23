@@ -1,0 +1,73 @@
+.file-selector {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.file-selector h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.no-files {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666;
+}
+
+.no-files p {
+  margin: 8px 0;
+}
+
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.file-item:hover {
+  border-color: #007bff;
+  background: #f8f9ff;
+}
+
+.file-item.selected {
+  border-color: #007bff;
+  background: #e3f2fd;
+}
+
+.file-icon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-meta {
+  font-size: 12px;
+  color: #666;
+} 

@@ -1,0 +1,77 @@
+.latex-display {
+  font-family: 'Courier New', monospace;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  text-align: left;
+}
+
+/* LaTeX element highlighting */
+.latex-command {
+  font-weight: bold;
+  color: #0066cc;
+  background-color: #e6f3ff;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.latex-environment {
+  font-weight: bold;
+  color: #cc6600;
+  background-color: #fff2e6;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.latex-math {
+  font-weight: bold;
+  color: #6600cc;
+  background-color: #f0e6ff;
+  padding: 1px 2px;
+  border-radius: 2px;
+}
+
+.latex-math-display {
+  font-weight: bold;
+  color: #6600cc;
+  background-color: #f0e6ff;
+  padding: 1px 2px;
+  border-radius: 2px;
+  display: block;
+  margin: 8px 0;
+}
+
+/* Validation highlighting */
+.latex-missing {
+  background-color: #ffebee !important;
+  color: #d32f2f !important;
+  padding: 2px 4px;
+  border-radius: 3px;
+  position: relative;
+}
+
+.latex-missing::after {
+  content: "⚠";
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #f44336;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* Bold highlighting for specific missing parts */
+.latex-missing strong {
+  font-weight: 900 !important;
+  color: #b71c1c !important;
+  background-color: #ffcdd2 !important;
+  padding: 1px 2px;
+  border-radius: 2px;
+} 

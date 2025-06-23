@@ -1,0 +1,163 @@
+.export-panel {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.export-panel h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.translation-stats {
+  background: #f8f9fa;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 16px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.stat-item:last-child {
+  margin-bottom: 0;
+}
+
+.stat-label {
+  font-weight: 500;
+  color: #666;
+}
+
+.stat-value {
+  font-weight: 600;
+  color: #333;
+}
+
+.stat-value.warning {
+  color: #dc3545;
+}
+
+.export-options {
+  margin-bottom: 20px;
+}
+
+.export-options h4 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 1rem;
+}
+
+.option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.option-group label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #555;
+  cursor: pointer;
+}
+
+.option-group input[type="checkbox"] {
+  margin: 0;
+}
+
+.export-actions {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.action-button {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.copy-button {
+  background: #007bff;
+  color: white;
+}
+
+.copy-button:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.copy-button.success {
+  background: #28a745;
+}
+
+.export-button {
+  background: #28a745;
+  color: white;
+}
+
+.export-button:hover:not(:disabled) {
+  background: #218838;
+}
+
+.export-button.success {
+  background: #20c997;
+}
+
+.action-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.missing-warning {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 16px;
+}
+
+.missing-warning h4 {
+  margin: 0 0 8px 0;
+  color: #856404;
+  font-size: 0.9rem;
+}
+
+.missing-warning p {
+  margin: 0 0 8px 0;
+  color: #856404;
+  font-size: 0.85rem;
+}
+
+.missing-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #856404;
+  font-size: 0.8rem;
+}
+
+.missing-list li {
+  margin-bottom: 4px;
+}
+
+.missing-list li:last-child {
+  margin-bottom: 0;
+  font-style: italic;
+} 
