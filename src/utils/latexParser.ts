@@ -16,7 +16,7 @@ export interface CommandStructure {
 
 export function extractCommandStructure(command: string): CommandStructure | null {
   // Simple regex to extract command name
-  const commandNameMatch = command.match(/^\\([a-zA-Z]+)/);
+  const commandNameMatch = command.match(/^\\([a-zA-Z0-9]+)/);
   if (!commandNameMatch) return null;
   
   const commandName = commandNameMatch[1];
@@ -191,7 +191,7 @@ export function parseLatexContent(text: string): LatexElement[] {
   }
 
   // Now process commands - find all \command patterns
-  const commandRegex = /\\[a-zA-Z]+/g;
+  const commandRegex = /\\[a-zA-Z0-9]+/g;
   let commandMatch;
   while ((commandMatch = commandRegex.exec(text)) !== null) {
     const commandStart = commandMatch.index;
@@ -243,6 +243,12 @@ export function parseLatexContent(text: string): LatexElement[] {
       } else if (!inBrace && !inBracket && /\s/.test(char)) {
         // If we're not in braces or brackets and hit whitespace, we're done
         break;
+      } else if (!inBrace && !inBracket && !/\s/.test(char)) {
+        // If we're not in braces or brackets and hit a non-whitespace character, 
+        // and we haven't found any parameters yet, stop here
+        if (braceCount === 0 && bracketCount === 0) {
+          break;
+        }
       }
       
       pos++;
@@ -343,6 +349,12 @@ export function compareLatexElements(originalElements: LatexElement[], translate
   missing: LatexElement[];
   different: LatexElement[];
 } {
+  // Guard: ensure both arrays are available
+  if (!originalElements || !translatedElements || originalElements.length === 0) {
+    return { missing: [], different: [] };
+  }
+
+  // Reset arrays at the beginning of each call
   const missing: LatexElement[] = [];
   const different: LatexElement[] = [];
 
@@ -353,14 +365,32 @@ export function compareLatexElements(originalElements: LatexElement[], translate
 
   originalCommands.forEach(origCmd => {
     let found = false;
+    
     for (let i = 0; i < translatedCommands.length; i++) {
       if (usedTranslated[i]) continue;
       const transCmd = translatedCommands[i];
-      if (
-        transCmd.commandStructure === origCmd.commandStructure &&
-        transCmd.commandName === origCmd.commandName &&
-        transCmd.content === origCmd.content
-      ) {
+      
+      // Check if this is an environment command (begin/end)
+      const isEnvironmentCommand = origCmd.commandName === 'begin' || origCmd.commandName === 'end';
+      
+      let isValidMatch = false;
+      
+      if (isEnvironmentCommand) {
+        // For environment commands, check that the environment name inside braces matches exactly
+        const origEnvMatch = origCmd.content.match(/\{([^}]*)\}/);
+        const transEnvMatch = transCmd.content.match(/\{([^}]*)\}/);
+        
+        isValidMatch = origCmd.commandStructure === transCmd.commandStructure &&
+                      origCmd.commandName === transCmd.commandName &&
+                      origEnvMatch !== null && transEnvMatch !== null &&
+                      origEnvMatch[1] === transEnvMatch[1];
+      } else {
+        // For regular commands, check structure and name (content can be translated)
+        isValidMatch = transCmd.commandStructure === origCmd.commandStructure &&
+                      transCmd.commandName === origCmd.commandName;
+      }
+      
+      if (isValidMatch) {
         usedTranslated[i] = true;
         found = true;
         break;
@@ -368,6 +398,47 @@ export function compareLatexElements(originalElements: LatexElement[], translate
     }
     if (!found) {
       missing.push(origCmd);
+    }
+  });
+
+  // Also check for extra commands in translation that don't exist in original
+  const usedOriginal = new Array(originalCommands.length).fill(false);
+  
+  translatedCommands.forEach(transCmd => {
+    let found = false;
+    for (let i = 0; i < originalCommands.length; i++) {
+      if (usedOriginal[i]) continue;
+      const origCmd = originalCommands[i];
+      
+      // Check if this is an environment command (begin/end)
+      const isEnvironmentCommand = transCmd.commandName === 'begin' || transCmd.commandName === 'end';
+      
+      let isValidMatch = false;
+      
+      if (isEnvironmentCommand) {
+        // For environment commands, check that the environment name inside braces matches exactly
+        const transEnvMatch = transCmd.content.match(/\{([^}]*)\}/);
+        const origEnvMatch = origCmd.content.match(/\{([^}]*)\}/);
+        
+        isValidMatch = transCmd.commandStructure === origCmd.commandStructure &&
+                      transCmd.commandName === origCmd.commandName &&
+                      transEnvMatch !== null && origEnvMatch !== null &&
+                      transEnvMatch[1] === origEnvMatch[1];
+      } else {
+        // For regular commands, check structure and name (content can be translated)
+        isValidMatch = transCmd.commandStructure === origCmd.commandStructure &&
+                      transCmd.commandName === origCmd.commandName;
+      }
+      
+      if (isValidMatch) {
+        usedOriginal[i] = true;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      // This translated command doesn't exist in original, mark it as different
+      different.push(transCmd);
     }
   });
 
@@ -430,20 +501,48 @@ export function highlightWithValidation(
   elements.forEach(element => {
     // Check if this element is missing in translation
     const isMissing = missingElements.some(missing => {
+      // For exact matching, compare the actual element instances
+      if (element.startIndex === missing.startIndex && 
+          element.endIndex === missing.endIndex &&
+          element.content === missing.content) {
+        return true;
+      }
+      
+      // For command elements, also check structure and name
       if (element.type === 'command' && missing.type === 'command') {
-        // For commands, compare structure and name
-        return element.commandStructure === missing.commandStructure &&
-               element.commandName === missing.commandName;
+        const isEnvironmentCommand = element.commandName === 'begin' || element.commandName === 'end';
+        
+        if (isEnvironmentCommand) {
+          // For environment commands, check that the environment name inside braces matches exactly
+          const elementEnvMatch = element.content.match(/\{([^}]*)\}/);
+          const missingEnvMatch = missing.content.match(/\{([^}]*)\}/);
+          
+          const envMatch = element.commandStructure === missing.commandStructure &&
+                 element.commandName === missing.commandName &&
+                 elementEnvMatch !== null && missingEnvMatch !== null &&
+                 elementEnvMatch[1] === missingEnvMatch[1];
+          
+          return envMatch;
+        } else {
+          // For regular commands, compare structure and name
+          const cmdMatch = element.commandStructure === missing.commandStructure &&
+                 element.commandName === missing.commandName;
+          
+          return cmdMatch;
+        }
       } else if (element.type === 'equation' && missing.type === 'equation') {
         // For equation environments, compare exact content
-        return element.content === missing.content;
+        const eqMatch = element.content === missing.content;
+        return eqMatch;
       } else if ((element.type === 'math' || element.type === 'math-display') && 
                  (missing.type === 'math' || missing.type === 'math-display')) {
         // For math expressions, compare exact content
-        return element.content === missing.content;
+        const mathMatch = element.content === missing.content;
+        return mathMatch;
       } else {
         // For other elements, compare exact content
-        return missing.content === element.content;
+        const otherMatch = missing.content === element.content;
+        return otherMatch;
       }
     });
     
@@ -473,11 +572,7 @@ export function findMissingParts(originalElement: LatexElement, translatedText: 
 } {
   const missingParts: Array<{start: number, end: number, content: string}> = [];
   
-  if (originalElement.type === 'command' && originalElement.commandStructure) {
-    // For commands, check if this specific instance exists in translated text
-    const commandName = originalElement.commandName || '';
-    const commandRegex = new RegExp(`\\\\${commandName}\\s*(?:\\[[^\\]]*\\])*\\s*(?:\\{[^}]*\\})*`, 'g');
-    
+  if (originalElement.type === 'command' && originalElement.commandStructure) {  
     // If we have fewer matches than expected, this instance is missing
     // For now, mark the entire command as missing
     missingParts.push({
@@ -534,10 +629,31 @@ export function highlightWithDetailedValidation(
   elements.forEach(element => {
     // Check if this element is missing in translation
     const isMissing = missingElements.some(missing => {
+      // For exact matching, compare the actual element instances
+      if (element.startIndex === missing.startIndex && 
+          element.endIndex === missing.endIndex &&
+          element.content === missing.content) {
+        return true;
+      }
+      
+      // For command elements, also check structure and name
       if (element.type === 'command' && missing.type === 'command') {
-        // For commands, compare structure and name
-        return element.commandStructure === missing.commandStructure &&
-               element.commandName === missing.commandName;
+        const isEnvironmentCommand = element.commandName === 'begin' || element.commandName === 'end';
+        
+        if (isEnvironmentCommand) {
+          // For environment commands, check that the environment name inside braces matches exactly
+          const elementEnvMatch = element.content.match(/\{([^}]*)\}/);
+          const missingEnvMatch = missing.content.match(/\{([^}]*)\}/);
+          
+          return element.commandStructure === missing.commandStructure &&
+                 element.commandName === missing.commandName &&
+                 elementEnvMatch !== null && missingEnvMatch !== null &&
+                 elementEnvMatch[1] === missingEnvMatch[1];
+        } else {
+          // For regular commands, compare structure and name
+          return element.commandStructure === missing.commandStructure &&
+                 element.commandName === missing.commandName;
+        }
       } else if (element.type === 'equation' && missing.type === 'equation') {
         // For equation environments, compare exact content
         return element.content === missing.content;

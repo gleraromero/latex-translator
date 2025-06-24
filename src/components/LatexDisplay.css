@@ -74,4 +74,16 @@
   background-color: #ffcdd2 !important;
   padding: 1px 2px;
   border-radius: 2px;
+}
+
+.latex-equation {
+  font-weight: bold;
+  color: #cc6600;
+  background-color: #fff2e6;
+  padding: 1px 2px;
+  border-radius: 2px;
+  display: block;
+  margin: 8px 0;
+  border-left: 3px solid #cc6600;
+  padding-left: 8px;
 } 

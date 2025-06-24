@@ -109,7 +109,9 @@ const TranslationPanel: React.FC<TranslationPanelProps> = ({
   // Parse LaTeX elements for original and translation
   const originalElements = parseLatexContent(para.originalText);
   const translatedElements = parseLatexContent(editingValue);
-  const { missing } = compareLatexElements(originalElements, translatedElements);
+  const { missing } = editingValue.trim() 
+    ? compareLatexElements(originalElements, translatedElements)
+    : { missing: [] };
 
   const handlePrev = () => {
     if (currentIdx > 0) setCurrentIdx(currentIdx - 1);
