@@ -385,9 +385,22 @@ export function compareLatexElements(originalElements: LatexElement[], translate
                       origEnvMatch !== null && transEnvMatch !== null &&
                       origEnvMatch[1] === transEnvMatch[1];
       } else {
-        // For regular commands, check structure and name (content can be translated)
-        isValidMatch = transCmd.commandStructure === origCmd.commandStructure &&
-                      transCmd.commandName === origCmd.commandName;
+        // Check if this is a command that requires exact content matching
+        const requiresExactMatch = origCmd.commandName === 'label' || 
+                                  origCmd.commandName === 'ref' || 
+                                  origCmd.commandName === 'cite' ||
+                                  origCmd.commandName === 'citet';
+        
+        if (requiresExactMatch) {
+          // For label, ref, cite commands, require exact content matching
+          isValidMatch = transCmd.commandStructure === origCmd.commandStructure &&
+                        transCmd.commandName === origCmd.commandName &&
+                        transCmd.content === origCmd.content;
+        } else {
+          // For regular commands, check structure and name (content can be translated)
+          isValidMatch = transCmd.commandStructure === origCmd.commandStructure &&
+                        transCmd.commandName === origCmd.commandName;
+        }
       }
       
       if (isValidMatch) {
@@ -425,9 +438,22 @@ export function compareLatexElements(originalElements: LatexElement[], translate
                       transEnvMatch !== null && origEnvMatch !== null &&
                       transEnvMatch[1] === origEnvMatch[1];
       } else {
-        // For regular commands, check structure and name (content can be translated)
-        isValidMatch = transCmd.commandStructure === origCmd.commandStructure &&
-                      transCmd.commandName === origCmd.commandName;
+        // Check if this is a command that requires exact content matching
+        const requiresExactMatch = transCmd.commandName === 'label' || 
+                                  transCmd.commandName === 'ref' || 
+                                  transCmd.commandName === 'cite' ||
+                                  transCmd.commandName === 'citet';
+        
+        if (requiresExactMatch) {
+          // For label, ref, cite commands, require exact content matching
+          isValidMatch = transCmd.commandStructure === origCmd.commandStructure &&
+                        transCmd.commandName === origCmd.commandName &&
+                        transCmd.content === origCmd.content;
+        } else {
+          // For regular commands, check structure and name (content can be translated)
+          isValidMatch = transCmd.commandStructure === origCmd.commandStructure &&
+                        transCmd.commandName === origCmd.commandName;
+        }
       }
       
       if (isValidMatch) {
@@ -524,11 +550,24 @@ export function highlightWithValidation(
           
           return envMatch;
         } else {
-          // For regular commands, compare structure and name
-          const cmdMatch = element.commandStructure === missing.commandStructure &&
-                 element.commandName === missing.commandName;
+          // Check if this is a command that requires exact content matching
+          const requiresExactMatch = element.commandName === 'label' || 
+                                    element.commandName === 'ref' || 
+                                    element.commandName === 'cite' ||
+                                    element.commandName === 'citet';
           
-          return cmdMatch;
+          if (requiresExactMatch) {
+            // For label, ref, cite commands, require exact content matching
+            const cmdMatch = element.commandStructure === missing.commandStructure &&
+                   element.commandName === missing.commandName &&
+                   element.content === missing.content;
+            return cmdMatch;
+          } else {
+            // For regular commands, compare structure and name
+            const cmdMatch = element.commandStructure === missing.commandStructure &&
+                   element.commandName === missing.commandName;
+            return cmdMatch;
+          }
         }
       } else if (element.type === 'equation' && missing.type === 'equation') {
         // For equation environments, compare exact content
@@ -650,9 +689,24 @@ export function highlightWithDetailedValidation(
                  elementEnvMatch !== null && missingEnvMatch !== null &&
                  elementEnvMatch[1] === missingEnvMatch[1];
         } else {
-          // For regular commands, compare structure and name
-          return element.commandStructure === missing.commandStructure &&
-                 element.commandName === missing.commandName;
+          // Check if this is a command that requires exact content matching
+          const requiresExactMatch = element.commandName === 'label' || 
+                                    element.commandName === 'ref' || 
+                                    element.commandName === 'cite' ||
+                                    element.commandName === 'citet';
+          
+          if (requiresExactMatch) {
+            // For label, ref, cite commands, require exact content matching
+            const cmdMatch = element.commandStructure === missing.commandStructure &&
+                   element.commandName === missing.commandName &&
+                   element.content === missing.content;
+            return cmdMatch;
+          } else {
+            // For regular commands, compare structure and name
+            const cmdMatch = element.commandStructure === missing.commandStructure &&
+                   element.commandName === missing.commandName;
+            return cmdMatch;
+          }
         }
       } else if (element.type === 'equation' && missing.type === 'equation') {
         // For equation environments, compare exact content

@@ -170,6 +170,90 @@ describe('latexParser', () => {
       expect(missing[0].content).toBe('\\item');
       expect(different).toHaveLength(0);
     });
+
+    // Test command comparison with special commands that require exact content matching
+    describe('Command comparison with exact content requirements', () => {
+      test('should require exact content matching for \\label commands', () => {
+        const original = parseLatexContent('\\label{intro}');
+        const translated = parseLatexContent('\\label{introduccion}'); // Different label key
+        
+        const result = compareLatexElements(original, translated);
+        
+        expect(result.missing).toHaveLength(1);
+        expect(result.missing[0].content).toBe('\\label{intro}');
+        expect(result.different).toHaveLength(1);
+        expect(result.different[0].content).toBe('\\label{introduccion}');
+      });
+
+      test('should require exact content matching for \\ref commands', () => {
+        const original = parseLatexContent('\\ref{intro}');
+        const translated = parseLatexContent('\\ref{introduccion}'); // Different reference key
+        
+        const result = compareLatexElements(original, translated);
+        
+        expect(result.missing).toHaveLength(1);
+        expect(result.missing[0].content).toBe('\\ref{intro}');
+        expect(result.different).toHaveLength(1);
+        expect(result.different[0].content).toBe('\\ref{introduccion}');
+      });
+
+      test('should require exact content matching for \\cite commands', () => {
+        const original = parseLatexContent('\\cite{smith2020}');
+        const translated = parseLatexContent('\\cite{smith2020}'); // Same citation key
+        
+        const result = compareLatexElements(original, translated);
+        
+        expect(result.missing).toHaveLength(0);
+        expect(result.different).toHaveLength(0);
+      });
+
+      test('should require exact content matching for \\citet commands', () => {
+        const original = parseLatexContent('\\citet{smith2020}');
+        const translated = parseLatexContent('\\citet{smith2020}'); // Same citation key
+        
+        const result = compareLatexElements(original, translated);
+        
+        expect(result.missing).toHaveLength(0);
+        expect(result.different).toHaveLength(0);
+      });
+
+      test('should mark \\citet with different keys as invalid', () => {
+        const original = parseLatexContent('\\citet{smith2020}');
+        const translated = parseLatexContent('\\citet{jones2021}'); // Different citation key
+        
+        const result = compareLatexElements(original, translated);
+        
+        expect(result.missing).toHaveLength(1);
+        expect(result.missing[0].content).toBe('\\citet{smith2020}');
+        expect(result.different).toHaveLength(1);
+        expect(result.different[0].content).toBe('\\citet{jones2021}');
+      });
+
+      test('should allow content translation for regular commands like \\section', () => {
+        const original = parseLatexContent('\\section{Introduction}');
+        const translated = parseLatexContent('\\section{Introducción}'); // Translated content
+        
+        const result = compareLatexElements(original, translated);
+        
+        expect(result.missing).toHaveLength(0);
+        expect(result.different).toHaveLength(0);
+      });
+
+      test('should handle mixed commands correctly', () => {
+        const original = parseLatexContent('\\section{Introduction}\\label{intro}\\cite{smith2020}');
+        const translated = parseLatexContent('\\section{Introducción}\\label{introduccion}\\cite{smith2020}');
+        
+        const result = compareLatexElements(original, translated);
+        
+        // \section should be valid (content can be translated)
+        // \label should be missing (different key)
+        // \cite should be valid (same key)
+        expect(result.missing).toHaveLength(1);
+        expect(result.missing[0].content).toBe('\\label{intro}');
+        expect(result.different).toHaveLength(1);
+        expect(result.different[0].content).toBe('\\label{introduccion}');
+      });
+    });
   });
 
   describe('highlightLatexText', () => {
